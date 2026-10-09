@@ -22,8 +22,8 @@ create table bronze.crm_prod_info
 	prod_name nvarchar (100),
 	prod_cost int,
 	prod_line nvarchar(50),
-	prod_start_date date,
-	prod_end_date date
+	prod_start_date datetime,
+	prod_end_date datetime
 
 );
 go
