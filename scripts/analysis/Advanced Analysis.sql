@@ -74,9 +74,9 @@ select
 avg(total_sales) over(partition by product_key) as average_sales,
 lag(total_sales) over(partition by product_key order by order_date) as last_year_sale,
 case when lag(total_sales) over(partition by product_key order by order_date) - total_sales >0
-	then 'Increased'
-	when  lag(total_sales) over(partition by product_key order by order_date) - total_sales <0
 	then 'Decreased'
+	when  lag(total_sales) over(partition by product_key order by order_date) - total_sales <0
+	then 'Increased'
 	else 'No change'
 	end last_year_report,
 case when avg(total_sales) over(partition by product_key) - total_sales >0
