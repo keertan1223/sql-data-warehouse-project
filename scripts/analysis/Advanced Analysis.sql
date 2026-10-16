@@ -4,6 +4,10 @@ Q1 : Change in Revenue by year
 Q2 : -- Change in revenue month by month
 Q3: -- Analyze the  yearly performance of prodcuts by comparing their sales to 
       both the average sales performance and previous year sale
+ Q4:Group customer into three segments on their spend behaviour 
+	 VIP : Customer with alteast 12 month of history and spending more than 5000
+	 Regular : Customer with atleast 12 month of history and spending 5000 or less
+	 New : customer with a lifespan less than 12 month
 */
 --Change in Revenue by year
 
@@ -91,3 +95,42 @@ from CTE_product_sales_summary
 left join gold.dim_product p
 on p.product_key = t.product_key
 where last_year_sale is not NULL and avg_rating = 'Above Avg' and last_year_report = 'Increased'
+
+-- Group customer into three segments on their spend behaviour 
+-- VIP : Customer with alteast 12 month of history and spending more than 5000
+-- Regular : Customer with atleast 12 month of history and spending 5000 or less
+-- New : customer with a lifespan less than 12 month
+GO
+With CTE_cust_total_spent as (
+	select
+	customer_key,
+	max(order_date) as last_order,
+	min(order_date) as first_order,
+	sum(sales_amount) as total_sales
+	from  gold.fact_sales
+	group by customer_key
+)
+select 
+customer_segment,
+count(customer_key) as total_count
+from(
+select 
+c.customer_key,
+c.first_name,c.last_name,
+s.total_sales as total_spending,
+s.first_order,
+s.last_order,
+case when s.total_sales > 5000 and datediff(month,first_order,last_order)> 12
+	then 'VIP'
+	when s.total_sales <= 5000 and datediff(month,first_order,last_order)> 12
+	then 'Regular'
+	else 'New'
+	end customer_segment
+from CTE_cust_total_spent s
+right join gold.dim_customers c
+on c.customer_key = s.customer_key
+)t
+group by customer_segment
+order by total_count desc
+
+
